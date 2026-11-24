@@ -2,6 +2,15 @@ English | [中文](README.md)
 
 # goTrust
 
+[![Vibe Coded](https://img.shields.io/badge/vibe--coded-%F0%9F%A4%96-8A2BE2)](#how-this-was-built)
+[![Listed on Awesome MyGo](https://awesomemygo.dev/badge.svg)](https://awesomemygo.dev/apps/gotrust)
+[![Release](https://img.shields.io/github/v/release/YangtseSu/goTrust?sort=semver&label=release)](https://github.com/YangtseSu/goTrust/releases/latest)
+[![CI](https://github.com/YangtseSu/goTrust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YangtseSu/goTrust/actions/workflows/ci.yml)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue)](LICENSE)
+[![Go 1.27](https://img.shields.io/badge/Go-1.27-00ADD8?logo=go&logoColor=white)](https://go.dev)
+[![AUR](https://img.shields.io/aur/version/gotrust?label=AUR&logo=archlinux&logoColor=1793d1)](https://aur.archlinux.org/packages/gotrust)
+[![AUR CLI](https://img.shields.io/aur/version/gotrust-cli?label=AUR%20CLI&logo=archlinux&logoColor=1793d1)](https://aur.archlinux.org/packages/gotrust-cli)
+
 goTrust is the desktop client for aTrust. It stays in the tray, signs in to a
 Sangfor aTrust gateway and keeps the session alive, while serving SOCKS5 and
 HTTP proxies on the loopback interface for browsers and other programs that
@@ -300,6 +309,14 @@ later one is refused, so two processes never share one login's data.
   for the interaction and interface design.
 * [mygo](https://github.com/egoist/mygo): the Go desktop framework behind the
   tray and the windows.
+
+## How this was built
+
+The project is developed with an AI coding agent: requirements, interaction
+and acceptance are human decisions, the code is mainly written by the agent.
+Every change runs `go build ./...`, `go test ./...`, `go vet ./...`,
+`gofmt -l .` and `reuse lint` before it is committed. [`AGENTS.md`](AGENTS.md)
+records the division of labour and the constraints.
 
 ## License
 

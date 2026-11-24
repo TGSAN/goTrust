@@ -2,6 +2,15 @@
 
 # goTrust
 
+[![Vibe Coded](https://img.shields.io/badge/vibe--coded-%F0%9F%A4%96-8A2BE2)](#开发方式)
+[![Listed on Awesome MyGo](https://awesomemygo.dev/badge.svg)](https://awesomemygo.dev/apps/gotrust)
+[![Release](https://img.shields.io/github/v/release/YangtseSu/goTrust?sort=semver&label=release)](https://github.com/YangtseSu/goTrust/releases/latest)
+[![CI](https://github.com/YangtseSu/goTrust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YangtseSu/goTrust/actions/workflows/ci.yml)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue)](LICENSE)
+[![Go 1.27](https://img.shields.io/badge/Go-1.27-00ADD8?logo=go&logoColor=white)](https://go.dev)
+[![AUR](https://img.shields.io/aur/version/gotrust?label=AUR&logo=archlinux&logoColor=1793d1)](https://aur.archlinux.org/packages/gotrust)
+[![AUR CLI](https://img.shields.io/aur/version/gotrust-cli?label=AUR%20CLI&logo=archlinux&logoColor=1793d1)](https://aur.archlinux.org/packages/gotrust-cli)
+
 goTrust 是 aTrust 的桌面客户端。它常驻托盘，登录 Sangfor aTrust 网关并保持会话，
 同时在本机回环地址上提供 SOCKS5 和 HTTP 代理，供浏览器或其他程序访问内网。
 
@@ -242,6 +251,12 @@ gotrust-cli --version
   协议层由它导入并继续维护。
 * [EZ4Connect](https://github.com/chenx-dust/EZ4Connect)：交互和界面设计的重要参考。
 * [mygo](https://github.com/egoist/mygo)：托盘和窗口使用的 Go 桌面框架。
+
+## 开发方式
+
+本项目在 AI 编码智能体辅助下开发：需求、交互和验收由人决定，代码主要由 AI 编写。提交前
+运行 `go build ./...`、`go test ./...`、`go vet ./...`、`gofmt -l .` 和 `reuse lint`。
+分工与约束见 [`AGENTS.md`](AGENTS.md)。
 
 ## 许可证
 
