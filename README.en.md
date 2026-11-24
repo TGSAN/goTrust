@@ -134,7 +134,8 @@ and the FAQ are in [`docs/handoff.en.md`](docs/handoff.en.md)
 * **One-time code** (SMS, TOTP, authenticator): the panel shows the gateway's
   prompt and an input. When the gateway allows it, later second factors can be
   skipped. TOTP can also save its secret, and goTrust then generates the code;
-  the secret is stored only for an account with Save password ticked.
+  the secret is stored only for an account with Save password ticked. The
+  `auth/token` gateway subtype `https` uses the same authenticator code prompt.
 * **External login** (CAS / OAuth2): the system browser opens the gateway's
   login page; after the login, paste the address the browser stopped on back
   into the panel. A wrong address is reported in the panel.

@@ -20,24 +20,9 @@ type tokenResponse struct {
 }
 
 func (s *Session) completeTOTP() (authStep, error) {
-	response := authchallenge.CodeResponse{}
-	if s.totpSecret != "" {
-		var err error
-		response.Code, err = totp.GenerateCode(s.totpSecret, time.Now())
-		if err != nil {
-			return authStep{}, fmt.Errorf("generate TOTP token: %w", err)
-		}
-	} else {
-		challenge := authchallenge.CodeChallenge{
-			Kind:                 authchallenge.CodeTOTP,
-			Message:              "Please enter the TOTP token:",
-			CanSkipSecondaryAuth: true,
-		}
-		var err error
-		response, err = s.challengeHandler.HandleCodeChallenge(challenge)
-		if err != nil {
-			return authStep{}, fmt.Errorf("complete TOTP challenge: %w", err)
-		}
+	response, err := s.totpResponse()
+	if err != nil {
+		return authStep{}, err
 	}
 
 	payload := map[string]interface{}{
@@ -48,6 +33,49 @@ func (s *Session) completeTOTP() (authStep, error) {
 	}
 	s.addUsername(payload)
 	return s.submitToken(payload)
+}
+
+func (s *Session) totpResponse() (authchallenge.CodeResponse, error) {
+	response := authchallenge.CodeResponse{}
+	if s.totpSecret != "" {
+		var err error
+		response.Code, err = totp.GenerateCode(s.totpSecret, time.Now())
+		if err != nil {
+			return authchallenge.CodeResponse{}, fmt.Errorf("generate TOTP token: %w", err)
+		}
+	} else {
+		challenge := authchallenge.CodeChallenge{
+			Kind:                 authchallenge.CodeTOTP,
+			Message:              "Please enter the TOTP token:",
+			CanSkipSecondaryAuth: true,
+		}
+		var err error
+		response, err = s.challengeHandler.HandleCodeChallenge(challenge)
+		if err != nil {
+			return authchallenge.CodeResponse{}, fmt.Errorf("complete TOTP challenge: %w", err)
+		}
+	}
+	return response, nil
+}
+
+func (s *Session) completeHTTPSToken(authID string) (authStep, error) {
+	if authID == "" {
+		return authStep{}, fmt.Errorf("HTTPS token authentication requires an authId")
+	}
+	response, err := s.totpResponse()
+	if err != nil {
+		return authStep{}, err
+	}
+	skip := "0"
+	if response.SkipSecondaryAuth {
+		skip = "1"
+	}
+	return s.submitToken(map[string]interface{}{
+		"code":              response.Code,
+		"skipSecondaryAuth": skip,
+		"taskId":            "",
+		"authId":            authID,
+	})
 }
 
 func (s *Session) completeRadius(service string) (authStep, error) {
