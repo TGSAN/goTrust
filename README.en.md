@@ -3,7 +3,7 @@ English | [中文](README.md)
 # goTrust
 
 [![Vibe Coded](https://img.shields.io/badge/vibe--coded-%F0%9F%A4%96-8A2BE2)](#how-this-was-built)
-[![Listed on Awesome MyGo](https://awesomemygo.dev/badge.svg)](https://awesomemygo.dev/apps/gotrust)
+<a href="https://awesomemygo.dev/apps/gotrust"><img src="https://awesomemygo.dev/badge.svg" alt="Listed on Awesome MyGo" height="20"></a>
 [![Release](https://img.shields.io/github/v/release/YangtseSu/goTrust?sort=semver&label=release)](https://github.com/YangtseSu/goTrust/releases/latest)
 [![CI](https://github.com/YangtseSu/goTrust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YangtseSu/goTrust/actions/workflows/ci.yml)
 [![License: AGPL-3.0-or-later](https://img.shields.io/badge/license-AGPL--3.0--or--later-blue)](LICENSE)
