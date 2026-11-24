@@ -25,6 +25,17 @@ func TestAuthStepFromTokenService(t *testing.T) {
 		t.Fatalf("unexpected token step: %+v", step)
 	}
 
+	step = authStepFromData(authStepData{
+		NextServiceList: []authServiceInfo{{
+			AuthID:   "https-id",
+			AuthType: "auth/token",
+			SubType:  "https",
+		}},
+	})
+	if step.Service != "auth/token/https" || step.AuthID != "https-id" {
+		t.Fatalf("unexpected fallback token step: %+v", step)
+	}
+
 	step = authStepFromData(authStepData{NextService: "auth/sendSms"})
 	if step.Service != "auth/sms" || step.SMSMode != smsWithoutAuthID {
 		t.Fatalf("unexpected sendSms step: %+v", step)

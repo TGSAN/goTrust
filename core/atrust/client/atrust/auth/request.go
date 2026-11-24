@@ -377,9 +377,12 @@ func authStepFromData(data authStepData) authStep {
 
 	if selected != nil {
 		step.AuthID = selected.AuthID
-		switch step.Service {
-		case "":
+		// The fallback service can itself be auth/token, so resolve it before
+		// normalizing the subtype.
+		if step.Service == "" {
 			step.Service = selected.AuthType
+		}
+		switch step.Service {
 		case "auth/token":
 			switch selected.AuthType {
 			case "auth/totp", "auth/radius", "auth/challenge":
