@@ -406,6 +406,9 @@ var authStepHandlers = map[string]func(*Session, authStep) (authStep, error){
 	"auth/totp": func(s *Session, _ authStep) (authStep, error) {
 		return s.completeTOTP()
 	},
+	"auth/token/https": func(s *Session, step authStep) (authStep, error) {
+		return s.completeHTTPSToken(step.AuthID)
+	},
 	"auth/radius": func(s *Session, _ authStep) (authStep, error) {
 		return s.completeRadius("auth/token")
 	},

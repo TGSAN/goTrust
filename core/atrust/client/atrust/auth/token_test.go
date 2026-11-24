@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/YangtseSu/goTrust/core/atrust/client/authchallenge"
+	"github.com/pquerna/otp/totp"
 )
 
 func TestAuthStepFromTokenService(t *testing.T) {
@@ -25,6 +28,105 @@ func TestAuthStepFromTokenService(t *testing.T) {
 	step = authStepFromData(authStepData{NextService: "auth/sendSms"})
 	if step.Service != "auth/sms" || step.SMSMode != smsWithoutAuthID {
 		t.Fatalf("unexpected sendSms step: %+v", step)
+	}
+}
+
+func TestHTTPSTokenAuthChain(t *testing.T) {
+	for _, skip := range []bool{false, true} {
+		t.Run(fmt.Sprintf("skip=%t", skip), func(t *testing.T) {
+			var tokenCalls int
+			server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.URL.Path {
+				case "/passport/v1/auth/authCheck":
+					fmt.Fprint(w, `{"code":0,"data":{"nextService":"auth/token","nextServiceList":[{"authId":"https-id","authType":"auth/token","subType":"https"}]}}`)
+				case "/passport/v1/auth/token":
+					tokenCalls++
+					if r.Method != http.MethodPost {
+						t.Errorf("method = %s, want POST", r.Method)
+					}
+					var payload map[string]interface{}
+					if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+						t.Fatal(err)
+					}
+					skipValue := "0"
+					if skip {
+						skipValue = "1"
+					}
+					want := map[string]interface{}{
+						"code": "123456", "skipSecondaryAuth": skipValue,
+						"taskId": "", "authId": "https-id",
+					}
+					if !reflect.DeepEqual(payload, want) {
+						t.Errorf("payload = %#v, want %#v", payload, want)
+					}
+					fmt.Fprint(w, `{"code":0,"data":{"nextService":""}}`)
+				default:
+					http.NotFound(w, r)
+				}
+			}))
+			defer server.Close()
+
+			session := newTLSTestSession(server)
+			session.challengeHandler = authchallenge.HandlerFuncs{
+				Code: func(challenge authchallenge.CodeChallenge) (authchallenge.CodeResponse, error) {
+					if challenge.Kind != authchallenge.CodeTOTP || !challenge.CanSkipSecondaryAuth {
+						t.Fatalf("unexpected challenge: %+v", challenge)
+					}
+					return authchallenge.CodeResponse{Code: "123456", SkipSecondaryAuth: skip}, nil
+				},
+			}
+			if err := session.continueAuth(authStep{Service: "auth/authCheck"}); err != nil {
+				t.Fatal(err)
+			}
+			if tokenCalls != 1 {
+				t.Fatalf("token calls = %d, want 1", tokenCalls)
+			}
+		})
+	}
+}
+
+func TestHTTPSTokenSavedSecret(t *testing.T) {
+	const secret = "JBSWY3DPEHPK3PXP"
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload struct {
+			Code   string `json:"code"`
+			AuthID string `json:"authId"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatal(err)
+		}
+		if payload.AuthID != "https-id" || !totp.Validate(payload.Code, secret) {
+			t.Errorf("invalid HTTPS token request")
+		}
+		fmt.Fprint(w, `{"code":0,"data":{}}`)
+	}))
+	defer server.Close()
+	session := newTLSTestSession(server)
+	session.totpSecret = secret
+	if _, err := session.completeHTTPSToken("https-id"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestHTTPSTokenRequiresAuthID(t *testing.T) {
+	session := &Session{}
+	if _, err := session.completeHTTPSToken(""); err == nil || !strings.Contains(err.Error(), "authId") {
+		t.Fatalf("error = %v, want missing authId", err)
+	}
+}
+
+func TestUnknownTokenSubtypeRemainsUnsupported(t *testing.T) {
+	step := authStepFromData(authStepData{
+		NextService: "auth/token",
+		NextServiceList: []authServiceInfo{{
+			AuthID: "id", AuthType: "auth/token", SubType: "unknown",
+		}},
+	})
+	if step.Service != "auth/token" {
+		t.Fatalf("unexpected token step: %+v", step)
+	}
+	if _, err := (&Session{}).runAuthStep(step); err == nil {
+		t.Fatal("unknown token subtype unexpectedly accepted")
 	}
 }
 
